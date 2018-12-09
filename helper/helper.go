@@ -1,4 +1,4 @@
-package responseFormatter
+package helper
 
 import (
 	"net/http"
@@ -19,3 +19,4 @@ func JsonResponse(response interface{}, status string, w http.ResponseWriter) {
 	json.NewEncoder(w).Encode(data)
 
 }
+

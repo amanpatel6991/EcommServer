@@ -3,9 +3,13 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"fmt"
+	"github.com/jinzhu/gorm"
 )
 
-func GetSampleData(c *gin.Context){
-	fmt.Println("access !! :" , Claims)
+func GetSampleData(db *gorm.DB) gin.HandlerFunc{
+	return func (c *gin.Context){
+		fmt.Println("access !! :" , Claims)
+		fmt.Println("access db !! :" , db)
 
+	}
 }

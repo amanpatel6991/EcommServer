@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	jwtreq "github.com/dgrijalva/jwt-go/request"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/EcommServer/responseFormatter"
+	"github.com/EcommServer/helper"
 )
 
 type UserClaims struct {
@@ -59,10 +59,10 @@ func AuthMiddleWare() gin.HandlerFunc {
 		})
 
 		if err == nil && token.Valid {
-			responseFormatter.JsonResponse("Access Granted", "200", context.Writer)
+			helper.JsonResponse("Access Granted", "200", context.Writer)
 			context.Next()
 		} else {
-			responseFormatter.JsonResponse("Unauthorized Access", "401", context.Writer)
+			helper.JsonResponse("Unauthorized Access", "401", context.Writer)
 			context.Abort()
 		}
 	}

@@ -15,13 +15,13 @@ func main() {
 
 	api := gin.Default()
 
-	api.POST("/login", controllers.Login)
+	api.GET("/login", controllers.Login)
 
 	group:=api.Group("/api/v1/")
 
 	group.Use(controllers.AuthMiddleWare())
 	{
-		group.GET("sample", controllers.GetSampleData)
+		group.GET("sample", controllers.GetSampleData(db))
 	}
 
 	api.Run(":5000")

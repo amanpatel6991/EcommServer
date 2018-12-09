@@ -8,8 +8,9 @@ import (
 	"time"
 	"github.com/dgrijalva/jwt-go"
 	"log"
-	"github.com/EcommServer/responseFormatter"
 	"fmt"
+	"github.com/EcommServer/helper"
+	"net/http"
 )
 
 func Login(c *gin.Context) {
@@ -33,10 +34,11 @@ func Login(c *gin.Context) {
 		if strings.ToLower(name1) == v.Email && strings.ToLower(pwd1) == v.Password {
 			//set claims
 			Claims = UserClaims{
-				models.User{Id:v.Id, FirstName:v.FirstName, LastName:v.LastName , SignedInSource: v.SignedInSource},
+				models.User{Id:v.Id, FirstName:v.FirstName, LastName:v.LastName, SignedInSource: v.SignedInSource},
 				time.Now(), //to generate unique token everytime  //rand.Intn(10000),
 				jwt.StandardClaims{
 					Issuer: "testing_administrator",
+					ExpiresAt: time.Now().Add(time.Second*10).Unix(),        //set this to large value (15-20 hrs) after testing
 				},
 			}
 
@@ -45,14 +47,21 @@ func Login(c *gin.Context) {
 
 			if err != nil {
 				c.String(404, "Not Found")
-				fmt.Fprintln(c.Writer, err)
 				log.Printf("err: %+v\n", err)
 				return
 			}
 
+			//set session cookie with token info
+			http.SetCookie(c.Writer, &http.Cookie{
+				Name:    "auth_token",
+				Value:   ss,
+				Expires: time.Now().Add(10 * time.Second),                  //expire this on any time logout
+			})
+
 			c.Writer.Header().Set("status", "200")
 			response := Token{Token:ss}
-			responseFormatter.JsonResponse(response, "200 OK", c.Writer)
+			helper.JsonResponse(response, "200 OK", c.Writer)
+
 			flag = 1
 			return
 		} else {
