@@ -15,8 +15,10 @@ func main() {
 
 	api := gin.Default()
 
+	api.OPTIONS("/login", controllers.Cors)
 	api.GET("/login", controllers.Login)
 
+	api.OPTIONS("/api/v1/", controllers.Cors)
 	group:=api.Group("/api/v1/")
 
 	group.Use(controllers.AuthMiddleWare())

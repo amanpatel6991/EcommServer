@@ -15,6 +15,7 @@ import (
 
 func Login(c *gin.Context) {
 
+	SetHeaders(c)
 	//getting credentials from headers
 	name1 := c.Request.Header.Get("username")
 	pwd1 := c.Request.Header.Get("password")
