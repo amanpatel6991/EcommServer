@@ -13,8 +13,9 @@ import (
 )
 
 type UserClaims struct {
-	UserProfile  models.User           `json:"userprofile"`
-	SecretKey    time.Time
+	UserProfile       models.User           `json:"user_profile"`
+	GoogleUserProfile models.GoogleUser           `json:"google_user_profile"`
+	SecretKey         time.Time
 	jwt.StandardClaims
 }
 
@@ -53,6 +54,7 @@ func InitKeys() {
 
 func AuthMiddleWare() gin.HandlerFunc {
 	return func(context *gin.Context) {
+		SetHeaders(context)
 		//validate token
 		token, err := jwtreq.ParseFromRequestWithClaims(context.Request, jwtreq.AuthorizationHeaderExtractor, &Claims, func(token *jwt.Token) (interface{}, error) {
 			return VerifyKey, nil

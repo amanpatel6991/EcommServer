@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/EcommServer/database"
 	"github.com/EcommServer/controllers"
 	"github.com/gin-gonic/gin"
+	"github.com/EcommServer/database"
 )
 
 
@@ -16,14 +16,17 @@ func main() {
 	api := gin.Default()
 
 	api.OPTIONS("/login", controllers.Cors)
-	api.GET("/login", controllers.Login)
+	api.POST("/login", controllers.Login)
 
-	api.OPTIONS("/api/v1/", controllers.Cors)
+	api.OPTIONS("/googleLogin", controllers.Cors)
+	api.POST("/googleLogin", controllers.GoogleLogin)
+
+	api.OPTIONS("/api/v1/:routes", controllers.Cors)
 	group:=api.Group("/api/v1/")
 
 	group.Use(controllers.AuthMiddleWare())
 	{
-		group.GET("sample", controllers.GetSampleData(db))
+		group.GET("sample", controllers.GetSampleData(nil))
 	}
 
 	api.Run(":5000")

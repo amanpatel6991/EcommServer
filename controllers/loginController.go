@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/EcommServer/database"
 	"github.com/EcommServer/models"
 	"strings"
 	"time"
@@ -11,16 +10,23 @@ import (
 	"fmt"
 	"github.com/EcommServer/helper"
 	"net/http"
+	"encoding/json"
+	"github.com/EcommServer/database"
 )
 
 func Login(c *gin.Context) {
 
 	SetHeaders(c)
 	//getting credentials from headers
-	name1 := c.Request.Header.Get("username")
-	pwd1 := c.Request.Header.Get("password")
 
-	fmt.Println("FORM RETURNS ::", name1, pwd1)
+	var loginUser models.LoginInfo
+	_ = json.NewDecoder(c.Request.Body).Decode(&loginUser)
+	fmt.Println("SENDING IN BODY" , loginUser.Username , loginUser.Password)
+
+	loginUsername := loginUser.Username
+	loginPassword := loginUser.Password
+
+	fmt.Println("FORM RETURNS ::", loginUsername, loginPassword)
 
 	db := database.InitDb("ecomm")
 	defer db.Close()
@@ -32,14 +38,17 @@ func Login(c *gin.Context) {
 	flag := -1                                                            //exit condition
 	for _, v := range user {
 
-		if strings.ToLower(name1) == v.Email && strings.ToLower(pwd1) == v.Password {
+		if strings.ToLower(loginUsername) == v.Email && strings.ToLower(loginPassword) == v.Password {
+		//if strings.ToLower(loginUsername) == "aman@gmail.com" && strings.ToLower(loginPassword) == "password" {
 			//set claims
 			Claims = UserClaims{
-				models.User{Id:v.Id, FirstName:v.FirstName, LastName:v.LastName, SignedInSource: v.SignedInSource},
+				//models.User{Id:v.Id, FirstName:v.FirstName, LastName:v.LastName,Email:v.Email, SignedInSource: v.SignedInSource},
+				models.User{Id: 1, FirstName: "Aman", LastName: "Patel",Email: "aman@gmail.com", SignedInSource: "manual"},
+				models.GoogleUser{},
 				time.Now(), //to generate unique token everytime  //rand.Intn(10000),
 				jwt.StandardClaims{
 					Issuer: "testing_administrator",
-					ExpiresAt: time.Now().Add(time.Second*10).Unix(),        //set this to large value (15-20 hrs) after testing
+					ExpiresAt: time.Now().Add(time.Second*1000).Unix(),        //set this to large value (15-20 hrs) after testing
 				},
 			}
 
@@ -61,7 +70,7 @@ func Login(c *gin.Context) {
 
 			c.Writer.Header().Set("status", "200")
 			response := Token{Token:ss}
-			helper.JsonResponse(response, "200 OK", c.Writer)
+			helper.JsonResponse(response, "200", c.Writer)
 
 			flag = 1
 			return
