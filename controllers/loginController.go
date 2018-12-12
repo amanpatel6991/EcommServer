@@ -42,8 +42,8 @@ func Login(c *gin.Context) {
 		//if strings.ToLower(loginUsername) == "aman@gmail.com" && strings.ToLower(loginPassword) == "password" {
 			//set claims
 			Claims = UserClaims{
-				//models.User{Id:v.Id, FirstName:v.FirstName, LastName:v.LastName,Email:v.Email, SignedInSource: v.SignedInSource},
-				models.User{Id: 1, FirstName: "Aman", LastName: "Patel",Email: "aman@gmail.com", SignedInSource: "manual"},
+				models.User{Id:v.Id, FirstName:v.FirstName, LastName:v.LastName,Email:v.Email, SignedInSource: v.SignedInSource},
+				//models.User{Id: 1, FirstName: "Aman", LastName: "Patel",Email: "aman@gmail.com", SignedInSource: "manual"},
 				models.GoogleUser{},
 				time.Now(), //to generate unique token everytime  //rand.Intn(10000),
 				jwt.StandardClaims{

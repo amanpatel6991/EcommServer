@@ -10,7 +10,7 @@ import (
 
 func InitDb(dbName string) *gorm.DB{
 	var db *gorm.DB
-	db,err:=gorm.Open("mysql","root:password@/"+dbName+"?charset=utf8&parseTime=True&loc=Local")
+	db,err:=gorm.Open("mysql","root:password@/"+dbName+"?charset=utf8&parseTime=True&loc=Local")  //todo see parameters in case of production ??
 
 	if err!=nil {
 		log.Fatal(err)
