@@ -10,6 +10,7 @@ import (
 	jwtreq "github.com/dgrijalva/jwt-go/request"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/EcommServer/helper"
+	"github.com/go-redis/redis"
 )
 
 type UserClaims struct {
@@ -17,10 +18,6 @@ type UserClaims struct {
 	GoogleUserProfile models.GoogleUser           `json:"google_user_profile"`
 	SecretKey         time.Time
 	jwt.StandardClaims
-}
-
-type Token struct {
-	Token string                      `json:"token"`
 }
 
 const (
@@ -52,9 +49,21 @@ func InitKeys() {
 	}
 }
 
-func AuthMiddleWare() gin.HandlerFunc {
+func AuthMiddleWare(redisDb *redis.Client) gin.HandlerFunc {
 	return func(context *gin.Context) {
+
 		SetHeaders(context)
+		requestToken := context.Request.Header.Get("token")
+
+		isTokenBlacklisted := models.CheckForBlacklistToken(redisDb, requestToken)
+
+		fmt.Println("isTokenBlacklisted :" , isTokenBlacklisted);
+
+		if isTokenBlacklisted {
+			helper.JsonResponse("Unauthorized Access due to Blacklisted Token", "401", context.Writer)
+			context.Abort()
+		}
+
 		//validate token
 		token, err := jwtreq.ParseFromRequestWithClaims(context.Request, jwtreq.AuthorizationHeaderExtractor, &Claims, func(token *jwt.Token) (interface{}, error) {
 			return VerifyKey, nil

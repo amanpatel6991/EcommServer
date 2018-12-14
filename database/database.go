@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "database/sql"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-redis/redis"
 )
 
 func InitDb(dbName string) *gorm.DB{
@@ -25,4 +26,22 @@ func InitDb(dbName string) *gorm.DB{
 		return db
 	}
 
+}
+
+func InitRedisDb(Db int) *redis.Client{
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "password", // no password set
+		DB:       Db,  // use default DB
+	})
+
+	_, err := client.Ping().Result()
+	if err!=nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	fmt.Println("redis connected")
+
+	return client
 }

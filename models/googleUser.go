@@ -6,13 +6,14 @@ import (
 )
 
 type GoogleUser struct {
-	Id        uint                   `json:"id,omitempty"`
-	Token     string                 `json:"token,omitempty" gorm:"type:varchar(2000)"`
-	Name      string                 `json:"name,omitempty"`
-	Email     string                 `json:"email,omitempty"`
-	Addresses []Address              `json:"addresses,omitempty" gorm:"ForeignKey:UserId;AssociationForeignKey:Id"` //one to many
-	CreatedAt time.Time            `json:"created_at,omitempty"`
-	UpdatedAt time.Time            `json:"updated_at,omitempty"`
+	Id             uint                   `json:"id,omitempty"`
+	Token          string                 `json:"token,omitempty" gorm:"type:varchar(2000)"`
+	Name           string                 `json:"name,omitempty"`
+	Email          string                 `json:"email,omitempty"`
+	SignedInSource string                 `json:"signed_in_source,omitempty"` //  google (if user created from any other source it wont have this value "maunal" and can be blacklisted)
+	Addresses      []Address              `json:"addresses,omitempty" gorm:"ForeignKey:UserId;AssociationForeignKey:Id"` //one to many
+	CreatedAt      time.Time              `json:"created_at,omitempty"`
+	UpdatedAt      time.Time              `json:"updated_at,omitempty"`
 }
 
 func (GoogleUser) TableName() string {
@@ -72,9 +73,26 @@ func GetGoogleAllUserswithAssociations(db *gorm.DB) ([]GoogleUser, string) {
 	return googleUsers, responseMsg
 }
 
+//CREATES NEW USER ONLY IF USER NOT ALREADY PRESENT IN DB
 func CreateGoogleUser(db *gorm.DB, data GoogleUser) (GoogleUser, string) {
 	var googleUser GoogleUser
 	var responseMsg string
+	data.SignedInSource = "google"
+
+	//Check if google user record already present
+	db.Where("email = ?" , data.Email).First(&googleUser)
+	if googleUser.Id !=0 {
+		tempId := googleUser.Id
+		rowsAffected := db.Debug().Model(&GoogleUser{}).Where("id=?", tempId).Update(&data).RowsAffected
+		db.Debug().Preload("Addresses").Find(&googleUser, tempId)
+		if (rowsAffected == 0 ) {
+			responseMsg = "CreateGoogleUpdateUser Query Failure !"
+		} else {
+			responseMsg = "CreateGoogleUpdateUser Query Success !"
+		}
+		return googleUser , responseMsg
+	}
+
 	rowsAffected := db.Debug().Create(&data).RowsAffected
 	db.Debug().Preload("Addresses").Last(&googleUser)
 	if (rowsAffected == 0 ) {

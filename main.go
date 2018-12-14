@@ -11,6 +11,10 @@ func main() {
 	db := database.InitDb("ecomm")
 	defer db.Close()
 
+	//Redis Db for JWT logout
+	redisDb := database.InitRedisDb(0)
+	defer redisDb.Close()
+
 	//db.DropTable(&models.User{} ,&models.GoogleUser{}, &models.Address{})
 
 	db.Debug().AutoMigrate(&models.User{}, &models.GoogleUser{}, &models.Address{})
@@ -67,20 +71,31 @@ func main() {
 	//user, respMsg := models.DeleteUserById(db ,10)
 	//fmt.Println("test db delete :", user, respMsg)
 
+	//val , err := redisDb.Get("token11").Result()                         //B -> Blacklisted
+	//fmt.Println(err , "dsd" ,val)
+
 	controllers.InitKeys()
 
 	api := gin.Default()
 
 	api.OPTIONS("/login", controllers.Cors)
-	api.POST("/login", controllers.Login)
+	api.POST("/login", controllers.Login(db))
 
 	api.OPTIONS("/googleLogin", controllers.Cors)
-	api.POST("/googleLogin", controllers.GoogleLogin)
+	api.POST("/googleLogin", controllers.GoogleLogin(db))
+
+	//Redirect To Login Page after signup
+	api.OPTIONS("/signup", controllers.Cors)
+	api.POST("/signup", controllers.Signup(db))
+
+	//Redirect To Login Page after signout
+	api.OPTIONS("/signout", controllers.Cors)
+	api.GET("/signout", controllers.SignOut(redisDb))
 
 	api.OPTIONS("/api/v1/:routes", controllers.Cors)
 	group := api.Group("/api/v1/")
 
-	group.Use(controllers.AuthMiddleWare())
+	group.Use(controllers.AuthMiddleWare(redisDb))
 	{
 		group.GET("sample", controllers.GetSampleData(nil))
 	}

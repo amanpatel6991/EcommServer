@@ -75,9 +75,11 @@ func GetAllUserswithAssociations(db *gorm.DB) ([]User, string) {                
 	return users, responseMsg
 }
 
+//CRATING OF CHILD IS ALLOWED WHILE CREATING PARENT BUT STILL PREFER CHILD'S CREATE METHOD EXCLUSIVELY
 func CreateUser(db *gorm.DB, data User) (User, string) {                                 //tested
 	var user User
 	var responseMsg string
+	data.SignedInSource = "manual"
 	rowsAffected := db.Debug().Create(&data).RowsAffected
 	db.Debug().Preload("Addresses").Last(&user)
 	if (rowsAffected == 0 ) {
