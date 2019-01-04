@@ -8,10 +8,10 @@ import (
 )
 
 func main() {
-	db := database.InitDb("ecomm")
+	db := database.InitDb("ecomm") // runs locally , though tested on google cloud , with cloud sql
 	defer db.Close()
 
-	//Redis Db for JWT logout
+	//Redis Db for JWT logout (runs locally for now)
 	redisDb := database.InitRedisDb(0)
 	defer redisDb.Close()
 
